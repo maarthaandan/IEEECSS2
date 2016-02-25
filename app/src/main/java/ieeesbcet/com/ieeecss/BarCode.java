@@ -21,6 +21,10 @@ import net.sourceforge.zbar.ImageScanner;
 import net.sourceforge.zbar.Symbol;
 import net.sourceforge.zbar.SymbolSet;
 
+import ezvcard.Ezvcard;
+import ezvcard.VCard;
+import ezvcard.property.Email;
+
 
 public class BarCode extends AppCompatActivity {
 
@@ -131,12 +135,14 @@ public class BarCode extends AppCompatActivity {
                 SymbolSet syms = scanner.getResults();
                 for (Symbol sym : syms) {
 
-                    Log.i("<<<<<<Asset Code>>>>> ",
+                    Log.d("<<<<<<Asset Code>>>>> ",
                             "<<<<Bar Code>>> " + sym.getData());
                     String scanResult = sym.getData().trim();
 
                     //showAlertDialog(scanResult);
 
+
+                    parseResult(scanResult);
                   /*  Toast.makeText(BarcodeScanner.this, scanResult,
                             Toast.LENGTH_SHORT).show();*/
 
@@ -157,6 +163,23 @@ public class BarCode extends AppCompatActivity {
 
 
 
+    private void parseResult(String vcard)
+    {
+       // Log.d("Debug", vcard);
+        VCard firstAndOnlyCard = Ezvcard.parse(vcard).first();
+        String email = firstAndOnlyCard.getEmails().get(0).getValue();
+        String name = firstAndOnlyCard.getStructuredName().getGiven();
+        String phone = firstAndOnlyCard.getTelephoneNumbers().get(0).getText();
+
+        addContact(name, phone, email);
+
+
+
+
+        showAlertDialog(vcard);
+    }
+
+
 
 
     private void addContact(String name, String phone, String email)
@@ -166,6 +189,7 @@ public class BarCode extends AppCompatActivity {
         intent.putExtra(ContactsContract.Intents.Insert.NAME, name);
         intent.putExtra(ContactsContract.Intents.Insert.PHONE, phone);
         intent.putExtra(ContactsContract.Intents.Insert.EMAIL, email);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
     }
 
